@@ -1,7 +1,8 @@
 name: et_date_picker
 description: "Ethiopian calendar date picker for Flutter. Users pick dates in the Ge'ez calendar; developers use either the Ethiopian date or the auto-converted Gregorian date."
 version: 0.0.1
-homepage:
+homepage: https://github.com/daniel-demelash/et_date_picker
+repository: https://github.com/daniel-demelash/et_date_picker
 
 environment:
   sdk: ^3.10.4
