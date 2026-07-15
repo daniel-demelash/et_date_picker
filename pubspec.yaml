@@ -4,6 +4,14 @@ version: 0.0.1
 homepage: https://github.com/daniel-demelash/et_date_picker
 repository: https://github.com/daniel-demelash/et_date_picker
 
+screenshots:
+  - description: 'Ethiopian date picker — day view'
+    path: screenshots/screenshot1.jpg
+  - description: 'Month and year picker'
+    path: screenshots/screenshot2.jpg
+  - description: 'Dialog with selected date preview'
+    path: screenshots/screenshot3.jpg
+
 environment:
   sdk: ^3.10.4
   flutter: ">=1.17.0"
@@ -23,10 +31,6 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
-  # To add assets to your package, add an assets section, like this:
-  assets:
-    - screenshots/
-  #
   # For details regarding assets in packages, see
   # https://flutter.dev/to/asset-from-package
   #
