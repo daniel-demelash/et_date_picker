@@ -29,6 +29,7 @@ A Flutter package that lets users pick dates on the Ethiopian (Ge'ez) calendar. 
 - Swipeable month navigation with smooth page transitions
 - Year and month grid picker — tap the header to jump to any year or month
 - Dialog presentation via `showEthiopianDatePickerDialog`
+- `initialDate`, `firstDate`, and `lastDate` accept Gregorian `DateTime` — converted internally for the Ethiopian calendar UI
 - Fully themeable — respects your app's `ColorScheme`
 - Unit tests covering date conversion edge cases including leap years
 
@@ -40,7 +41,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  et_date_picker: ^0.0.1
+  et_date_picker: ^0.0.3
 ```
 
 Then run:
@@ -62,9 +63,10 @@ import 'package:et_date_picker/et_date_picker.dart';
 ### Dialog
 
 ```dart
+final today = DateTime.now();
 final result = await showEthiopianDatePickerDialog(
   context: context,
-  initialDate: EtDateConverter.today(),
+  initialDate: DateTime(today.year, today.month, today.day),
 );
 
 if (result != null) {
@@ -91,10 +93,12 @@ When `useEthiopicNumerals` is true, day numbers use the bundled Noto Sans Ethiop
 ```dart
 final result = await showEthiopianDatePickerDialog(
   context: context,
-  firstDate: EthiopianDate(year: 2015, month: 1, day: 1),
-  lastDate: EthiopianDate(year: 2020, month: 13, day: 5),
+  firstDate: DateTime(2007, 9, 12),
+  lastDate: DateTime(2024, 9, 11),
 );
 ```
+
+`initialDate`, `firstDate`, and `lastDate` accept Gregorian `DateTime` values. Only the calendar date (year, month, day) is used; the picker converts them internally for the Ethiopian calendar UI.
 
 ### Custom theme
 
@@ -251,9 +255,9 @@ EthiopianDate({
 ```dart
 Future<EthiopianPickerResult?> showEthiopianDatePickerDialog({
   required BuildContext context,
-  EthiopianDate? initialDate,
-  EthiopianDate? firstDate,
-  EthiopianDate? lastDate,
+  DateTime? initialDate,
+  DateTime? firstDate,
+  DateTime? lastDate,
   bool useEthiopicNumerals = false,
   EthiopianDatePickerTheme? theme,
   String confirmLabel = 'Confirm',
@@ -270,11 +274,57 @@ result.ethiopianDate  // EthiopianDate
 result.gregorianDate  // DateTime
 ```
 
+### `EthiopianCalendarController`
+
+```dart
+EthiopianCalendarController({
+  DateTime? initialDate,
+  EthiopianDate? initialEthiopianDate,
+})
+```
+
+Provide either `initialDate` (Gregorian) or `initialEthiopianDate`, not both. Use the controller with `EthiopianDatePicker` for programmatic navigation and selection.
+
+### `EthiopianDatePicker`
+
+Embed the picker directly in your UI (without the dialog wrapper):
+
+```dart
+EthiopianDatePicker(
+  initialDate: DateTime(2024, 10, 19),
+  firstDate: DateTime(2000, 1, 1),
+  lastDate: DateTime(2030, 12, 31),
+  onDateSelected: (ethiopianDate, gregorianDate) {
+    // ...
+  },
+)
+```
+
+`initialDate`, `firstDate`, and `lastDate` are Gregorian `DateTime` values, same as the dialog API.
+
 ### `EthiopianDatePickerTheme`
 
 Key styling hooks: `backgroundColor`, `headerTextStyle`, `dowTextStyle`, `dayTextStyle`, `todayTextStyle`, `selectedDayTextStyle`, `disabledDayTextStyle`, `outsideDayTextStyle`, `selectedPreviewLabelStyle`, `selectedPreviewValueStyle`, `confirmButtonStyle`, `cancelButtonStyle`, `dayCellHeight`, `dayCellMargin`.
 
 Use `selectedDayTextStyle.backgroundColor` for the selected-day circle fill and `todayTextStyle.color` for today's border ring.
+
+---
+
+## Upgrading from 0.0.2
+
+`initialDate`, `firstDate`, and `lastDate` now take Gregorian `DateTime` instead of `EthiopianDate`.
+
+```dart
+// Before (0.0.2)
+initialDate: EthiopianDate(year: 2017, month: 2, day: 9),
+firstDate: EthiopianDate(year: 2015, month: 1, day: 1),
+
+// After (0.0.3)
+initialDate: DateTime(2024, 10, 19),
+firstDate: DateTime(2007, 9, 12),
+```
+
+If you already have an `EthiopianDate`, convert it with `EtDateConverter.toGregorian(etDate)`. If you have a previous picker result, use `result.gregorianDate` directly.
 
 ---
 

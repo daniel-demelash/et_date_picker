@@ -1,3 +1,8 @@
+## 0.0.3
+
+- **Breaking:** `initialDate`, `firstDate`, and `lastDate` on `EthiopianDatePicker` and `showEthiopianDatePickerDialog` now accept Gregorian `DateTime` instead of `EthiopianDate`. Only the calendar date (year, month, day) is used; values are converted internally for the Ethiopian calendar UI.
+- `EthiopianCalendarController` accepts either `initialDate` (Gregorian `DateTime`) or `initialEthiopianDate` (`EthiopianDate`), not both.
+
 ## 0.0.2
 
 - Added `homepage` and `repository` URLs to pubspec

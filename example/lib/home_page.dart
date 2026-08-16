@@ -43,9 +43,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _openPicker({
     EthiopianDatePickerTheme? theme,
-    EthiopianDate? initialDate,
-    EthiopianDate? firstDate,
-    EthiopianDate? lastDate,
+    DateTime? initialDate,
+    DateTime? firstDate,
+    DateTime? lastDate,
     required void Function(EthiopianPickerResult) onPicked,
   }) async {
     final result = await showEthiopianDatePickerDialog(
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _pickForBackend() async {
     await _openPicker(
-      initialDate: _picked?.ethiopianDate ?? EtDateConverter.today(),
+      initialDate: _picked?.gregorianDate ?? DateTime.now(),
       onPicked: (r) => _picked = r,
     );
   }
@@ -80,7 +80,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final today = EtDateConverter.today();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final colorScheme = Theme.of(context).colorScheme;
     final standardNow = DateTime.now();
     final etTime = _now.time;
@@ -151,7 +152,7 @@ class _HomePageState extends State<HomePage> {
               trailing: _themeResult?.ethiopianDate.toAmharicString(),
               onTap: () => _openPicker(
                 theme: _minimalTheme,
-                initialDate: _themeResult?.ethiopianDate ?? today,
+                initialDate: _themeResult?.gregorianDate ?? today,
                 onPicked: (r) => _themeResult = r,
               ),
             ),
@@ -162,7 +163,7 @@ class _HomePageState extends State<HomePage> {
               trailing: _themeResult?.ethiopianDate.toAmharicString(),
               onTap: () => _openPicker(
                 theme: _lightTheme,
-                initialDate: _themeResult?.ethiopianDate ?? today,
+                initialDate: _themeResult?.gregorianDate ?? today,
                 onPicked: (r) => _themeResult = r,
               ),
             ),
@@ -173,7 +174,7 @@ class _HomePageState extends State<HomePage> {
               trailing: _themeResult?.ethiopianDate.toAmharicString(),
               onTap: () => _openPicker(
                 theme: _darkTheme,
-                initialDate: _themeResult?.ethiopianDate ?? today,
+                initialDate: _themeResult?.gregorianDate ?? today,
                 onPicked: (r) => _themeResult = r,
               ),
             ),
@@ -196,12 +197,12 @@ class _HomePageState extends State<HomePage> {
               trailing: _birthDate?.ethiopianDate.toAmharicString(),
               onTap: () => _openPicker(
                 initialDate:
-                    _birthDate?.ethiopianDate ??
-                    EthiopianDate(year: today.year - 20, month: 1, day: 1),
-                firstDate: EthiopianDate(
-                  year: today.year - 120,
-                  month: 1,
-                  day: 1,
+                    _birthDate?.gregorianDate ??
+                    DateTime(today.year - 20, 1, 1),
+                firstDate: DateTime(
+                  today.year - 120,
+                  1,
+                  1,
                 ),
                 lastDate: today,
                 onPicked: (r) => _birthDate = r,
@@ -213,19 +214,11 @@ class _HomePageState extends State<HomePage> {
               subtitle: 'Future dates only · firstDate: tomorrow',
               trailing: _alarmDate?.ethiopianDate.toAmharicString(),
               onTap: () {
-                final nextDay = EtDateConverter.toEthiopian(
-                  EtDateConverter.toGregorian(
-                    today,
-                  ).add(const Duration(days: 1)),
-                );
+                final nextDay = today.add(const Duration(days: 1));
                 _openPicker(
-                  initialDate: _alarmDate?.ethiopianDate ?? nextDay,
+                  initialDate: _alarmDate?.gregorianDate ?? nextDay,
                   firstDate: nextDay,
-                  lastDate: EthiopianDate(
-                    year: today.year + 5,
-                    month: 13,
-                    day: 5,
-                  ),
+                  lastDate: DateTime(today.year + 5, 12, 31),
                   onPicked: (r) => _alarmDate = r,
                 );
               },
@@ -236,17 +229,13 @@ class _HomePageState extends State<HomePage> {
               subtitle: '±1 year around today',
               trailing: _eventDate?.ethiopianDate.toAmharicString(),
               onTap: () => _openPicker(
-                initialDate: _eventDate?.ethiopianDate ?? today,
-                firstDate: EthiopianDate(
-                  year: today.year - 1,
-                  month: 1,
-                  day: 1,
+                initialDate: _eventDate?.gregorianDate ?? today,
+                firstDate: DateTime(
+                  today.year - 1,
+                  1,
+                  1,
                 ),
-                lastDate: EthiopianDate(
-                  year: today.year + 1,
-                  month: 13,
-                  day: 5,
-                ),
+                lastDate: DateTime(today.year + 1, 12, 31),
                 onPicked: (r) => _eventDate = r,
               ),
             ),

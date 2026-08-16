@@ -15,10 +15,33 @@ enum EthiopianPickerView {
 }
 
 class EthiopianCalendarController extends ChangeNotifier {
-  EthiopianCalendarController({EthiopianDate? initialDate}) {
+  /// Creates a controller.
+  ///
+  /// Provide either [initialDate] (a Gregorian [DateTime]) or
+  /// [initialEthiopianDate] (an [EthiopianDate]), not both.
+  ///
+  /// ```dart
+  /// // Gregorian DateTime
+  /// EthiopianCalendarController(initialDate: DateTime(2024, 10, 19))
+  ///
+  /// // Ethiopian date directly
+  /// EthiopianCalendarController(
+  ///   initialEthiopianDate: EthiopianDate(year: 2017, month: 2, day: 9),
+  /// )
+  /// ```
+  EthiopianCalendarController({
+    DateTime? initialDate,
+    EthiopianDate? initialEthiopianDate,
+  }) : assert(
+         initialDate == null || initialEthiopianDate == null,
+         'Provide either initialDate (Gregorian DateTime) or '
+         'initialEthiopianDate (EthiopianDate), not both.',
+       ) {
     final today = EtDateConverter.today();
-    _focusedEtMonth = (initialDate ?? today).firstDayOfMonth;
-    _selectedEtDate = initialDate;
+    final etDate = initialEthiopianDate ??
+        (initialDate != null ? EtDateConverter.toEthiopian(initialDate) : null);
+    _focusedEtMonth = (etDate ?? today).firstDayOfMonth;
+    _selectedEtDate = etDate;
   }
 
   late EthiopianDate _focusedEtMonth;
