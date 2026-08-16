@@ -21,9 +21,16 @@ import 'ethiopian_date_picker_theme.dart';
 /// ```
 Future<EthiopianPickerResult?> showEthiopianDatePickerDialog({
   required BuildContext context,
-  EthiopianDate? initialDate,
-  EthiopianDate? firstDate,
-  EthiopianDate? lastDate,
+
+  /// The date to show initially. Accepts a Gregorian [DateTime]; converted
+  /// internally to [EthiopianDate].
+  DateTime? initialDate,
+
+  /// Earliest selectable date as a Gregorian [DateTime]; converted internally.
+  DateTime? firstDate,
+
+  /// Latest selectable date as a Gregorian [DateTime]; converted internally.
+  DateTime? lastDate,
   bool useEthiopicNumerals = false,
   EthiopianDatePickerTheme? theme,
   String confirmLabel = 'Confirm',
@@ -65,9 +72,9 @@ class _EthiopianDatePickerDialog extends StatefulWidget {
     this.shape,
   });
 
-  final EthiopianDate? initialDate;
-  final EthiopianDate? firstDate;
-  final EthiopianDate? lastDate;
+  final DateTime? initialDate;
+  final DateTime? firstDate;
+  final DateTime? lastDate;
   final bool useEthiopicNumerals;
   final EthiopianDatePickerTheme? theme;
   final String confirmLabel;

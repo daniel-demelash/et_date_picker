@@ -30,11 +30,18 @@ class EthiopianDatePicker extends StatefulWidget {
 
   final EthiopianCalendarController? controller;
   final EthiopianDateSelectedCallback? onDateSelected;
-  final EthiopianDate? initialDate;
-  final EthiopianDate? firstDate;
-  final EthiopianDate? lastDate;
-  final bool useEthiopicNumerals;
 
+  /// The date to show initially. Accepts a Gregorian [DateTime]; converted
+  /// internally to [EthiopianDate].
+  final DateTime? initialDate;
+
+  /// Earliest selectable date as a Gregorian [DateTime]; converted internally.
+  final DateTime? firstDate;
+
+  /// Latest selectable date as a Gregorian [DateTime]; converted internally.
+  final DateTime? lastDate;
+
+  final bool useEthiopicNumerals;
   final EthiopianDatePickerTheme? theme;
 
   @override
@@ -63,9 +70,10 @@ class _EthiopianDatePickerState extends State<EthiopianDatePicker> {
     }
     _controller.addListener(_onControllerChanged);
 
-    _anchorMonth =
-        (widget.firstDate ?? EthiopianDate(year: 2000, month: 1, day: 1))
-            .firstDayOfMonth;
+    final firstEt = widget.firstDate != null
+        ? EtDateConverter.toEthiopian(widget.firstDate!)
+        : EthiopianDate(year: 2000, month: 1, day: 1);
+    _anchorMonth = firstEt.firstDayOfMonth;
 
     _pageController = PageController(
       initialPage: _pageIndexOf(_controller.focusedEtMonth),
@@ -125,8 +133,19 @@ class _EthiopianDatePickerState extends State<EthiopianDatePicker> {
     return EthiopianDate(year: year, month: month, day: 1);
   }
 
+  /// Lazily converts firstDate/lastDate to ET only when needed.
+  EthiopianDate? get _firstEtDate =>
+      widget.firstDate != null
+          ? EtDateConverter.toEthiopian(widget.firstDate!)
+          : null;
+
+  EthiopianDate? get _lastEtDate =>
+      widget.lastDate != null
+          ? EtDateConverter.toEthiopian(widget.lastDate!)
+          : null;
+
   bool _isBeforeFirstDate(EthiopianDate date) {
-    final first = widget.firstDate;
+    final first = _firstEtDate;
     if (first == null) return false;
     if (date.year != first.year) return date.year < first.year;
     if (date.month != first.month) return date.month < first.month;
@@ -134,7 +153,7 @@ class _EthiopianDatePickerState extends State<EthiopianDatePicker> {
   }
 
   bool _isAfterLastDate(EthiopianDate date) {
-    final last = widget.lastDate;
+    final last = _lastEtDate;
     if (last == null) return false;
     if (date.year != last.year) return date.year > last.year;
     if (date.month != last.month) return date.month > last.month;
@@ -146,13 +165,13 @@ class _EthiopianDatePickerState extends State<EthiopianDatePicker> {
 
   /// Whether any day in [year]/[month] is selectable given [firstDate]/[lastDate].
   bool _isMonthInRange(int year, int month) {
-    final first = widget.firstDate;
+    final first = _firstEtDate;
     if (first != null) {
       if (year < first.year || (year == first.year && month < first.month)) {
         return false;
       }
     }
-    final last = widget.lastDate;
+    final last = _lastEtDate;
     if (last != null) {
       if (year > last.year || (year == last.year && month > last.month)) {
         return false;
@@ -165,8 +184,8 @@ class _EthiopianDatePickerState extends State<EthiopianDatePicker> {
   /// (defaulting to a ±100 year span around today if unset).
   ({int min, int max}) get _yearRange {
     final todayYear = EtDateConverter.today().year;
-    final min = widget.firstDate?.year ?? (todayYear - 100);
-    final max = widget.lastDate?.year ?? (todayYear + 100);
+    final min = _firstEtDate?.year ?? (todayYear - 100);
+    final max = _lastEtDate?.year ?? (todayYear + 100);
     return (min: min, max: max);
   }
 
