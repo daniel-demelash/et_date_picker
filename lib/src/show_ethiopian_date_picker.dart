@@ -1,8 +1,19 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'ethiopian_date.dart';
 import 'ethiopian_date_picker.dart';
 import 'ethiopian_date_picker_theme.dart';
+
+/// Maximum dialog width, aligned with Flutter Material 3 date picker.
+const double kEthiopianDatePickerMaxDialogWidth = 360;
+
+/// Default [Dialog.insetPadding], aligned with Flutter Material date picker.
+const EdgeInsets kEthiopianDatePickerInsetPadding = EdgeInsets.symmetric(
+  horizontal: 16,
+  vertical: 24,
+);
 
 /// Shows the Ethiopian date picker in a [Dialog].
 ///
@@ -32,12 +43,36 @@ Future<EthiopianPickerResult?> showEthiopianDatePickerDialog({
   /// Latest selectable date as a Gregorian [DateTime]; converted internally.
   DateTime? lastDate,
   bool useEthiopicNumerals = false,
-  EthiopianDatePickerTheme? theme,
-  String confirmLabel = 'Confirm',
-  String cancelLabel = 'Cancel',
 
-  /// Width of the dialog. Defaults to 360 which fits comfortably on most phones.
-  double width = 360,
+  /// When true, shows a live preview of the selected Ethiopian and Gregorian
+  /// dates above the dialog buttons.
+  bool showSelectedDatePreview = false,
+  EthiopianDatePickerTheme? theme,
+
+  /// Label for the cancel button.
+  ///
+  /// When null, uses [MaterialLocalizations.cancelButtonLabel] from the ambient
+  /// locale (same as Flutter's [showDatePicker]).
+  String? cancelText,
+
+  /// Label for the confirm button.
+  ///
+  /// When null, uses [MaterialLocalizations.okButtonLabel] from the ambient
+  /// locale (same as Flutter's [showDatePicker]).
+  String? confirmText,
+
+  /// Maximum width of the dialog (logical pixels).
+  ///
+  /// Defaults to [kEthiopianDatePickerMaxDialogWidth] (360), matching Flutter's
+  /// Material 3 date picker. The actual width is clamped to the available screen
+  /// width minus [insetPadding].
+  double width = kEthiopianDatePickerMaxDialogWidth,
+
+  /// Padding between the dialog and the screen edges.
+  ///
+  /// Defaults to [kEthiopianDatePickerInsetPadding] (16 horizontal, 24 vertical),
+  /// matching Flutter's Material date picker.
+  EdgeInsets insetPadding = kEthiopianDatePickerInsetPadding,
 
   /// Dialog outline shape. Defaults to a 20px rounded rectangle.
   ShapeBorder? shape,
@@ -49,13 +84,27 @@ Future<EthiopianPickerResult?> showEthiopianDatePickerDialog({
       firstDate: firstDate,
       lastDate: lastDate,
       useEthiopicNumerals: useEthiopicNumerals,
+      showSelectedDatePreview: showSelectedDatePreview,
       theme: theme,
-      confirmLabel: confirmLabel,
-      cancelLabel: cancelLabel,
+      cancelText: cancelText,
+      confirmText: confirmText,
       width: width,
+      insetPadding: insetPadding,
       shape: shape,
     ),
   );
+}
+
+/// Resolves the dialog width for [context], clamping [maxWidth] to the space
+/// available after [insetPadding].
+double resolveEthiopianDatePickerDialogWidth(
+  BuildContext context, {
+  double maxWidth = kEthiopianDatePickerMaxDialogWidth,
+  EdgeInsets insetPadding = kEthiopianDatePickerInsetPadding,
+}) {
+  final availableWidth =
+      MediaQuery.sizeOf(context).width - insetPadding.horizontal;
+  return math.min(maxWidth, availableWidth);
 }
 
 /// The dialog widget. Kept private — callers use [showEthiopianDatePickerDialog].
@@ -65,10 +114,12 @@ class _EthiopianDatePickerDialog extends StatefulWidget {
     this.firstDate,
     this.lastDate,
     this.useEthiopicNumerals = false,
+    this.showSelectedDatePreview = false,
     this.theme,
-    this.confirmLabel = 'ምረጥ',
-    this.cancelLabel = 'ይቅር',
-    this.width = 360,
+    this.cancelText,
+    this.confirmText,
+    this.width = kEthiopianDatePickerMaxDialogWidth,
+    this.insetPadding = kEthiopianDatePickerInsetPadding,
     this.shape,
   });
 
@@ -76,10 +127,12 @@ class _EthiopianDatePickerDialog extends StatefulWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
   final bool useEthiopicNumerals;
+  final bool showSelectedDatePreview;
   final EthiopianDatePickerTheme? theme;
-  final String confirmLabel;
-  final String cancelLabel;
+  final String? cancelText;
+  final String? confirmText;
   final double width;
+  final EdgeInsets insetPadding;
   final ShapeBorder? shape;
 
   @override
@@ -99,14 +152,24 @@ class _EthiopianDatePickerDialogState
       theme: widget.theme,
     );
 
+    final dialogWidth = resolveEthiopianDatePickerDialogWidth(
+      context,
+      maxWidth: widget.width,
+      insetPadding: widget.insetPadding,
+    );
+    final localizations = MaterialLocalizations.of(context);
+    final cancelText =
+        widget.cancelText ?? localizations.cancelButtonLabel;
+    final confirmText = widget.confirmText ?? localizations.okButtonLabel;
+
     return Dialog(
       backgroundColor: pickerTheme.backgroundColor,
       shape:
           widget.shape ??
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      insetPadding: widget.insetPadding,
       child: SizedBox(
-        width: widget.width,
+        width: dialogWidth,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
           child: Column(
@@ -129,20 +192,21 @@ class _EthiopianDatePickerDialogState
 
               const SizedBox(height: 8),
 
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child: _selectedEt != null
-                    ? Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _SelectedDatePreview(
-                          ethiopianDate: _selectedEt!,
-                          gregorianDate: _selectedGc!,
-                          theme: pickerTheme,
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
+              if (widget.showSelectedDatePreview)
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: _selectedEt != null
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _SelectedDatePreview(
+                            ethiopianDate: _selectedEt!,
+                            gregorianDate: _selectedGc!,
+                            theme: pickerTheme,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
 
               Row(
                 children: [
@@ -150,7 +214,7 @@ class _EthiopianDatePickerDialogState
                     child: OutlinedButton(
                       style: pickerTheme.cancelButtonStyle,
                       onPressed: () => Navigator.pop(context),
-                      child: Text(widget.cancelLabel),
+                      child: Text(cancelText),
                     ),
                   ),
 
@@ -168,7 +232,7 @@ class _EthiopianDatePickerDialogState
                                 gregorianDate: _selectedGc!,
                               ),
                             ),
-                      child: Text(widget.confirmLabel),
+                      child: Text(confirmText),
                     ),
                   ),
                 ],

@@ -30,6 +30,9 @@ A Flutter package that lets users pick dates on the Ethiopian (Ge'ez) calendar. 
 - Year and month grid picker — tap the header to jump to any year or month
 - Dialog presentation via `showEthiopianDatePickerDialog`
 - `initialDate`, `firstDate`, and `lastDate` accept Gregorian `DateTime` — converted internally for the Ethiopian calendar UI
+- Responsive dialog sizing — max 360dp width, clamped to fit smaller phones (Material 3 aligned)
+- Localized Cancel / OK button labels via `MaterialLocalizations` (overridable)
+- Optional ET/GC selected-date preview strip in the dialog
 - Fully themeable — respects your app's `ColorScheme`
 - Unit tests covering date conversion edge cases including leap years
 
@@ -41,7 +44,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  et_date_picker: ^0.0.3
+  et_date_picker: ^0.0.4
 ```
 
 Then run:
@@ -66,7 +69,7 @@ import 'package:et_date_picker/et_date_picker.dart';
 final today = DateTime.now();
 final result = await showEthiopianDatePickerDialog(
   context: context,
-  initialDate: DateTime(today.year, today.month, today.day),
+  initialDate: today,
 );
 
 if (result != null) {
@@ -75,7 +78,18 @@ if (result != null) {
 }
 ```
 
-The dialog shows a live preview of both the Ethiopian and Gregorian dates as the user selects a day, with Confirm and Cancel actions. Tap the header to open the year grid, pick a year, then pick a month — or swipe left/right to move one month at a time.
+The dialog returns both calendar representations on confirm. Tap the header to open the year grid, pick a year, then pick a month — or swipe left/right to move one month at a time. Button labels follow your app locale (`Cancel` / `OK` in English).
+
+### Selected date preview
+
+By default the ET/GC preview strip above the buttons is hidden. Enable it when you want users to see both calendars before confirming:
+
+```dart
+final result = await showEthiopianDatePickerDialog(
+  context: context,
+  showSelectedDatePreview: true,
+);
+```
 
 ### Ethiopic numerals
 
@@ -241,14 +255,14 @@ EthiopianDate({
 
 ### `EthiopianTime`
 
-| Property / Method | Description |
-|---|---|
-| `hour` | 12-hour dial value (1–12) |
-| `minute`, `second` | Same as standard clock |
-| `isDay`, `isNight` | Whether the period is ቀን or ሌሊት |
-| `periodLabel` | `"ቀን"` or `"ሌሊት"` |
-| `format()` | e.g. `"3:30 ቀን"` |
-| `formatWithSeconds()` | e.g. `"3:30:45 ቀን"` |
+| Property / Method     | Description                     |
+| -----------------------| ---------------------------------|
+| `hour`                | 12-hour dial value (1–12)       |
+| `minute`, `second`    | Same as standard clock          |
+| `isDay`, `isNight`    | Whether the period is ቀን or ሌሊት |
+| `periodLabel`         | `"ቀን"` or `"ሌሊት"`               |
+| `format()`            | e.g. `"3:30 ቀን"`                |
+| `formatWithSeconds()` | e.g. `"3:30:45 ቀን"`             |
 
 ### `showEthiopianDatePickerDialog`
 
@@ -259,12 +273,26 @@ Future<EthiopianPickerResult?> showEthiopianDatePickerDialog({
   DateTime? firstDate,
   DateTime? lastDate,
   bool useEthiopicNumerals = false,
+  bool showSelectedDatePreview = false,
   EthiopianDatePickerTheme? theme,
-  String confirmLabel = 'Confirm',
-  String cancelLabel = 'Cancel',
-  double width = 360,
+  String? cancelText,
+  String? confirmText,
+  double width = 360, // max width; clamped to available screen space
+  EdgeInsets insetPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 24),
   ShapeBorder? shape,
 })
+```
+
+`width` defaults to 360 (Flutter Material 3 date picker size) but is automatically clamped to fit smaller screens. `insetPadding` matches Flutter's Material date picker defaults.
+
+`cancelText` and `confirmText` are optional. When omitted, they follow the app locale via `MaterialLocalizations` — the same behavior as Flutter's `showDatePicker` (`Cancel` / `OK` in English). For Amharic buttons:
+
+```dart
+await showEthiopianDatePickerDialog(
+  context: context,
+  cancelText: 'ይቅር',
+  confirmText: 'ምረጥ',
+);
 ```
 
 Returns `null` if the user cancels. On confirm, returns both calendar representations:
@@ -302,6 +330,14 @@ EthiopianDatePicker(
 
 `initialDate`, `firstDate`, and `lastDate` are Gregorian `DateTime` values, same as the dialog API.
 
+### Dialog sizing constants
+
+| Name | Value | Description |
+|---|---|---|
+| `kEthiopianDatePickerMaxDialogWidth` | `360` | Max dialog width (Material 3) |
+| `kEthiopianDatePickerInsetPadding` | `16×24` | Default screen inset padding |
+| `resolveEthiopianDatePickerDialogWidth()` | — | Clamps width to available screen space |
+
 ### `EthiopianDatePickerTheme`
 
 Key styling hooks: `backgroundColor`, `headerTextStyle`, `dowTextStyle`, `dayTextStyle`, `todayTextStyle`, `selectedDayTextStyle`, `disabledDayTextStyle`, `outsideDayTextStyle`, `selectedPreviewLabelStyle`, `selectedPreviewValueStyle`, `confirmButtonStyle`, `cancelButtonStyle`, `dayCellHeight`, `dayCellMargin`.
@@ -325,6 +361,24 @@ firstDate: DateTime(2007, 9, 12),
 ```
 
 If you already have an `EthiopianDate`, convert it with `EtDateConverter.toGregorian(etDate)`. If you have a previous picker result, use `result.gregorianDate` directly.
+
+## Upgrading from 0.0.3
+
+- `cancelLabel` / `confirmLabel` were renamed to `cancelText` / `confirmText` and are now optional. Omit them to use localized `Cancel` / `OK` labels.
+
+```dart
+// Before (0.0.3)
+cancelLabel: 'Cancel',
+confirmLabel: 'OK',
+
+// After (0.0.4) — localized by default
+// or override explicitly:
+cancelText: 'ይቅር',
+confirmText: 'ምረጥ',
+```
+
+- The ET/GC preview strip is now opt-in via `showSelectedDatePreview: true` (default `false`).
+- Dialog `insetPadding` default changed from `24×40` to `16×24` (Material aligned). Dialog width is clamped on narrow screens.
 
 ---
 

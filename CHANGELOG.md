@@ -1,3 +1,10 @@
+## 0.0.4
+
+- Added `showSelectedDatePreview` to `showEthiopianDatePickerDialog` (default `false`) to optionally show the ET/GC preview strip above the dialog buttons.
+- Dialog width is now clamped to the available screen space (max 360dp, matching Material 3). Added `kEthiopianDatePickerMaxDialogWidth`, `kEthiopianDatePickerInsetPadding`, and `resolveEthiopianDatePickerDialogWidth`.
+- Added `insetPadding` parameter; default aligned with Flutter Material date picker (16 horizontal, 24 vertical).
+- **Breaking:** Renamed `cancelLabel` / `confirmLabel` to `cancelText` / `confirmText`. Both are now optional and default to `MaterialLocalizations` (`Cancel` / `OK` in English), matching Flutter's `showDatePicker`.
+
 ## 0.0.3
 
 - **Breaking:** `initialDate`, `firstDate`, and `lastDate` on `EthiopianDatePicker` and `showEthiopianDatePickerDialog` now accept Gregorian `DateTime` instead of `EthiopianDate`. Only the calendar date (year, month, day) is used; values are converted internally for the Ethiopian calendar UI.
